@@ -13,6 +13,10 @@
 
 #include <memory>
 
+// ZACHARY
+#include "widgets/splits/Dictionary.hpp"
+// END ZACHARY
+
 namespace chatterino {
 
 class Split;
@@ -100,6 +104,13 @@ protected:
     void hideCompletionPopup();
     void insertCompletionText(const QString &input_) const;
     void openEmotePopup();
+
+    // ZACHARY
+    void checkSpelling();
+
+    Dictionary& dictionary_ = Dictionary::instance();
+    // END ZACHARY
+
 
     void updateCancelReplyButton();
 

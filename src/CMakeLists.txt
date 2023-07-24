@@ -602,6 +602,10 @@ set(SOURCE_FILES
         widgets/splits/SplitInput.hpp
         widgets/splits/SplitOverlay.cpp
         widgets/splits/SplitOverlay.hpp
+        # ZACHARY
+        widgets/splits/Dictionary.cpp
+        widgets/splits/Dictionary.hpp
+        # END ZACHARY
 
         ${CMAKE_SOURCE_DIR}/resources/resources.qrc
         )

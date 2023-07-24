@@ -31,6 +31,8 @@
 #include <QSignalBlocker>
 
 #include <functional>
+// ZACHARY
+//#include <fstream>
 
 namespace chatterino {
 
@@ -689,11 +691,17 @@ void SplitInput::mousePressEvent(QMouseEvent *event)
 
 void SplitInput::onTextChanged()
 {
+    // ZACHARY: Check if the text is spelled correctly.
+    this->checkSpelling();
+
     this->updateCompletionPopup();
 }
 
 void SplitInput::onCursorPositionChanged()
 {
+    // ZACHARY: Check if the text is spelled correctly.
+    this->checkSpelling();
+
     this->updateCompletionPopup();
 }
 
@@ -840,6 +848,78 @@ void SplitInput::insertCompletionText(const QString &input_) const
         }
     }
 }
+
+// ZACHARY
+void SplitInput::checkSpelling()
+{
+    // Input: this is some te_
+    // Another input: this is so_me te
+    // Get the string associated with where the cursor currently is.
+    // Check if the word is misspelled.
+    // If it is, put a squiggly line underneath that word.
+    // If it is not, then do nothing.
+
+    auto &edit = *this->ui_.textEdit;
+    auto text = edit.toPlainText();
+    auto position = edit.textCursor().position();
+
+    // Find the beginning and end of the current word
+    int wordStart = text.lastIndexOf(' ', position - 1) + 1;
+    int wordEnd = text.indexOf(' ', position);
+
+    if (wordEnd == -1)
+    {
+        wordEnd = text.length();
+    }
+
+    // Get the current word
+    QString currentWord = text.mid(wordStart, wordEnd - wordStart);
+
+    qCDebug(chatterinoWidget) << "Current Word:" << currentWord;
+    qCDebug(chatterinoWidget) << "wordStart: " << wordStart << " - wordEnd: " << wordEnd;
+
+    edit.blockSignals(true);
+
+    if (currentWord.isEmpty() && wordStart != 0)
+    {
+        QTextCursor clearFormatCursor(edit.document());
+        clearFormatCursor.setPosition(wordStart - 1);
+        clearFormatCursor.setPosition(wordEnd, QTextCursor::KeepAnchor);
+
+        clearFormatCursor.setCharFormat(QTextCharFormat());
+
+        edit.blockSignals(false);
+
+        return;
+    }
+
+    // Create a format for the misspelled word
+    QTextCharFormat misspelledFormat;
+    misspelledFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+    misspelledFormat.setUnderlineColor(QColor::fromRgb(192, 192, 192));
+
+    // Check if the current word is misspelled
+    if (dictionary_.isMisspelled(currentWord))
+    {
+        // Apply underline format to the current word
+        QTextCursor misspelledCursor(edit.document());
+        misspelledCursor.setPosition(wordStart);
+        misspelledCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+        misspelledCursor.setCharFormat(misspelledFormat);
+    }
+    else
+    {
+        // Remove the underline format from the current word
+        QTextCursor clearFormatCursor(edit.document());
+        clearFormatCursor.setPosition(wordStart);
+        clearFormatCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+        clearFormatCursor.setCharFormat(QTextCharFormat());
+    }
+
+    edit.blockSignals(false);
+}
+
+// END ZACHARY
 
 bool SplitInput::hasSelection() const
 {
